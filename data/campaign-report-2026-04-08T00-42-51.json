@@ -1,0 +1,53 @@
+{
+  "processedAt": "2026-04-08T00:42:51.874Z",
+  "totalCampaigns": 6,
+  "reports": [
+    {
+      "id": "camp-001",
+      "name": "Black Friday LATAM",
+      "metric": 50,
+      "status": "ok",
+      "evaluatedAt": "2026-04-08T00:42:51.115Z"
+    },
+    {
+      "id": "camp-002",
+      "name": "Retargeting Mexico",
+      "metric": 2,
+      "status": "warning",
+      "evaluatedAt": "2026-04-08T00:42:51.237Z"
+    },
+    {
+      "id": "camp-003",
+      "name": "Brand Awareness Q2",
+      "metric": 0.1,
+      "status": "critical",
+      "evaluatedAt": "2026-04-08T00:42:51.392Z"
+    },
+    {
+      "id": "camp-004",
+      "name": "Conversion App Install",
+      "metric": 30,
+      "status": "ok",
+      "evaluatedAt": "2026-04-08T00:42:51.611Z"
+    },
+    {
+      "id": "camp-005",
+      "name": "Prospecting Colombia",
+      "metric": 0.5,
+      "status": "critical",
+      "evaluatedAt": "2026-04-08T00:42:51.780Z"
+    },
+    {
+      "id": "camp-006",
+      "name": "Video Views Chile",
+      "metric": 50,
+      "status": "ok",
+      "evaluatedAt": "2026-04-08T00:42:51.874Z"
+    }
+  ],
+  "summary": {
+    "ok": 3,
+    "warning": 1,
+    "critical": 2
+  }
+}

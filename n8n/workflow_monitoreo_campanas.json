@@ -1,0 +1,329 @@
+{
+  "name": "workflow_monitoreo_campanas",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inlaze-campaign-report",
+        "options": {
+          "responseCode": {
+            "values": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "93696309-7a91-49a4-bb45-815007b2e0cf",
+      "name": "Entrada: Webhook de Campañas",
+      "webhookId": "79304f66-f9dd-4b51-a657-a74889d72442"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.reports",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "dbb989cb-6c01-41f5-9e81-390af0b88576",
+      "name": "Procesador: Desglose de Registros"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f0fa2ee4-6b6a-4386-9a0d-05aa4445a211",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        0
+      ],
+      "id": "ad15da30-c508-41fb-a391-5b594abce62d",
+      "name": "Filtro: Exclusión de Campañas OK"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "critical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "efa2a9a3-4d68-4f81-a333-6638bd4c12a7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ef0fa194-976a-4d29-b4ff-d9653162591b",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "warning",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        0
+      ],
+      "id": "0e361d3d-702b-47d0-b984-44f5a415d7f3",
+      "name": "Clasificador: Prioridad de Alerta",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "URL_DE_TU_WEBHOOK_AQUÍ",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=🚨 **ALERTA CRÍTICA** 🚨\n--\n**Campaña:** {{ $json.name }}\n**Métrica:** {{ $json.metric }}\n**Estado:** {{ $json.status.toUpperCase() }}\n\n🧠 **ANÁLISIS DE IA (GPT-4o):**\n{{ $('Entrada: Webhook de Campañas').item.json.body.llmSummary.summary }}\n\n--\n_Acción sugerida: Revisar segmentación de inmediato._"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        992,
+        -176
+      ],
+      "id": "d685152d-bc86-41db-80fd-b91f229037fd",
+      "name": "Notificación: Alerta Crítica (Inmediata)",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "ID_DE_TU_GOOGLE_SHEET_AQUÍ",
+          "mode": "list",
+          "cachedResultName": "Marketing_Campaign_Warnings_2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DE_TU_GOOGLE_SHEET_AQUÍ/edit"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DE_TU_GOOGLE_SHEET_AQUÍ/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Campaign Name": "={{ $('Filtro: Exclusión de Campañas OK').item.json.name }}",
+            "Metric": "={{ $('Filtro: Exclusión de Campañas OK').item.json.metric }}",
+            "Status": "={{ $('Filtro: Exclusión de Campañas OK').item.json.status }}",
+            "Date": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Campaign Name",
+              "displayName": "Campaign Name",
+              "type": "string"
+            },
+            {
+              "id": "Metric",
+              "displayName": "Metric",
+              "type": "string"
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "type": "string"
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        960,
+        96
+      ],
+      "id": "e3f205ad-bde5-4bfe-a3d6-fd77485e31e7",
+      "name": "Registro: Log de Seguimiento (Warnings)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3zRY0ktVSwKSelfw",
+          "name": "Google Sheets account jorge"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -240
+      ],
+      "id": "5b22b80e-f3ba-4529-a71a-074b3257c412",
+      "name": "Monitor: Captura Global de Errores"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "URL_DE_TU_WEBHOOK_AQUÍ",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "=⚠️ **FALLO TÉCNICO DETECTADO** ⚠️\n--\n**Nodo donde falló:** {{ $json.lastNodeExecuted }}\n**Mensaje del error:** {{ $json.error.message }}\n**ID de Ejecución:** {{ $json.execution.id }}\n--\n_Este reporte fue generado automáticamente por el Monitor de Errores._"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        512,
+        -240
+      ],
+      "id": "979042e7-e0ed-4f07-a23f-0fc0f0efefa0",
+      "name": "Notificación: Log de Errores",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "Entrada: Webhook de Campañas": {
+      "main": [
+        [
+          {
+            "node": "Procesador: Desglose de Registros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesador: Desglose de Registros": {
+      "main": [
+        [
+          {
+            "node": "Filtro: Exclusión de Campañas OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro: Exclusión de Campañas OK": {
+      "main": [
+        [
+          {
+            "node": "Clasificador: Prioridad de Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificador: Prioridad de Alerta": {
+      "main": [
+        [
+          {
+            "node": "Notificación: Alerta Crítica (Inmediata)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registro: Log de Seguimiento (Warnings)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monitor: Captura Global de Errores": {
+      "main": [
+        [
+          {
+            "node": "Notificación: Log de Errores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

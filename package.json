@@ -1,0 +1,29 @@
+{
+  "name": "inlaze-campaign-monitor",
+  "version": "1.0.0",
+  "description": "Sistema de monitoreo de rendimiento de campañas publicitarias con alertas automáticas y resúmenes ejecutivos generados por IA.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "npx ts-node src/index.ts",
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "type-check": "npx tsc --noEmit"
+  },
+  "keywords": [
+    "campaigns",
+    "monitoring",
+    "llm",
+    "typescript"
+  ],
+  "author": "Jorge Pimienta",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.14.0",
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

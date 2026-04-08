@@ -1,0 +1,10 @@
+# Secretos y llaves (Lo más importante)
+.env
+
+# Carpetas pesadas que no se suben
+node_modules/
+dist/
+
+# Archivos temporales y logs
+*.log
+.DS_Store
