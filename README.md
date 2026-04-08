@@ -1,53 +1,11 @@
-Sistema de Monitoreo de Campañas - Automatización e IA
-Este repositorio contiene la solución técnica desarrollada para el procesamiento, análisis y reporte de métricas de campañas de marketing. El objetivo principal es transformar datos brutos en decisiones automáticas mediante el uso de inteligencia artificial y orquestación de flujos de trabajo.
+Monitor de Campañas Inlaze: Arquitectura Híbrida (IA + Lógica Determinística)Este repositorio contiene una solución robusta para el monitoreo, análisis y reporte de campañas de marketing. El sistema transforma datos brutos en alertas accionables y resúmenes estratégicos, combinando la precisión del software tradicional con la capacidad de síntesis de la Inteligencia Artificial.Filosofía de Diseño: Eficiencia y DeterminismoPara esta solución, se ha implementado una arquitectura híbrida. A diferencia de implementaciones básicas que delegan toda la lógica en un LLM, este sistema separa las responsabilidades para garantizar escalabilidad y reducir costos operativos:Clasificación Determinística (Core):La evaluación de estados (CRITICAL, WARNING, OK) se realiza mediante lógica pura en TypeScript.Por qué: Clasificar métricas basadas en umbrales (CTR/ROAS) es una operación matemática que debe ser predecible ($O(1)$). Delegar esto a una IA generativa añadiría latencia innecesaria, riesgos de "alucinación" y sobrecostos de API.Capa de Inteligencia Ejecutiva:Se utiliza el modelo GPT-4o (vía SDK oficial de OpenAI) exclusivamente para la generación de resúmenes estratégicos y propuestas de acción. La IA recibe datos ya procesados y clasificados, lo que permite obtener análisis mucho más precisos y útiles para la toma de decisiones.Características TécnicasTipado Estricto: Implementación 100% en TypeScript con interfaces definidas para todo el flujo de datos, eliminando por completo el uso de tipos any.Capa de Persistencia Avanzada: Uso de Prisma ORM para la gestión de base de datos, incluyendo consultas optimizadas de agrupación por operador y cálculos de promedios de ROAS en periodos de 7 días.Integración Robusta de IA: Migración al SDK oficial de OpenAI para un manejo de errores superior y una integración nativa con los modelos más recientes.Automatización de Flujos: Integración con n8n mediante Webhooks para la transmisión de alertas y reportes consolidados.Estructura del Proyectosrc/utils/: Lógica matemática para la clasificación de estados de campaña.src/analysis/: Módulos de procesamiento de datos y filtrado de performance (CTR).src/database/: Implementación de Prisma para analítica agregada.src/services/: Capa de servicios para la integración con el SDK de OpenAI.n8n/: Archivo JSON con la configuración del flujo de automatización.Configuración e Instalación1. Variables de EntornoCrea un archivo .env en la raíz del proyecto basándote en el archivo .env.example:Fragmento de códigoOPENAI_API_KEY=tu_api_key_aqui
+N8N_WEBHOOK_URL=tu_endpoint_aqui
+DATABASE_URL=tu_conexion_db
+2. InstalaciónBash# Instalación de dependencias y SDKs
+npm install
 
-Arquitectura de la Solución
-El sistema opera bajo una arquitectura desacoplada para garantizar escalabilidad y mantenimiento:
-
-Capa de Procesamiento (TypeScript): Se desarrolló un script que centraliza la extracción de métricas. Este componente se integra directamente con la API de OpenAI para evaluar el rendimiento de cada campaña bajo el modelo GPT-4o, asignando un estado lógico (critical, warning, ok) basado en un análisis inteligente de datos.
-
-Transmisión de Datos: La información procesada, incluyendo el resumen ejecutivo generado por la IA, se envía mediante un Webhook (HTTP POST) hacia el motor de automatización.
-
-Capa de Orquestación (n8n): El flujo recibe la carga de datos y ejecuta la lógica de negocio:
-
-Prioridad Alta: Las campañas en estado crítico activan una notificación inmediata en Discord, incluyendo el análisis descriptivo de la IA.
-
-Seguimiento: Las campañas con advertencias se registran en un log histórico en Google Sheets para su posterior auditoría.
-
-Tecnologías Implementadas
-Entorno de Ejecución: Node.js y TypeScript.
-
-Inteligencia Artificial: OpenAI API (Modelo GPT-4o para análisis de métricas).
-
-Orquestación de Workflows: n8n.
-
-Integraciones: Discord API y Google Sheets API.
-
-Resiliencia y Manejo de Errores
-Para dar cumplimiento a los requerimientos de estabilidad del sistema, se implementaron las siguientes medidas:
-
-Captura Global de Errores: Se configuró un nodo Error Trigger en n8n que monitorea el flujo de manera constante. Ante cualquier fallo en los nodos de salida o de procesamiento, el sistema captura la excepción, genera un log del error y notifica al administrador sin detener la operación general.
-
-Continuidad Operativa: Los nodos finales cuentan con la configuración Continue on Error, asegurando que el fallo en una integración específica (ej. saturación de API en Sheets) no bloquee la entrega de alertas urgentes en otros canales.
-
-Configuración del Entorno
-Variables de Envío
-Para la ejecución del proyecto, es indispensable configurar un archivo .env en la raíz (excluido por políticas de seguridad en el .gitignore) con los siguientes parámetros:
-
-Fragmento de código
-OPENAI_API_KEY=tu_sk_de_openai_aqui
-N8N_WEBHOOK_URL=tu_endpoint_de_n8n_aqui
-Ejecución
-Instalar dependencias: npm install
-
-Iniciar el procesamiento: npx ts-node src/index.ts
-
-Estructura del Proyecto
-/src: Código fuente del script de análisis e integración con OpenAI.
-
-/n8n: Archivo de exportación del flujo (.json) con la lógica de ruteo y alertas.
-
-README.md: Documentación técnica del proyecto.
-
-Notas de Entrega
-La integración con OpenAI permite que el sistema no solo notifique métricas, sino que proporcione un contexto analítico para la toma de decisiones. Se han utilizado placeholders en el archivo JSON del flujo de n8n para proteger las URLs de Webhooks y IDs de documentos privados, manteniendo la portabilidad de la solución.
+# Generación del cliente de base de datos (Prisma)
+npx prisma generate
+3. EjecuciónBash# Iniciar el monitor en modo desarrollo
+npm run dev
+Notas sobre Calidad de CódigoManejo de Errores: Todos los servicios (API, DB, AI) están protegidos con bloques try/catch y logs descriptivos.Seguridad: Las credenciales se gestionan estrictamente mediante variables de entorno y están protegidas por .gitignore.Documentación: Se incluye un archivo DESIGN.md adicional con la propuesta técnica para la evolución hacia un Agente de IA con capacidades de tool-calling.

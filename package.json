@@ -18,8 +18,11 @@
   "author": "Jorge Pimienta",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^7.7.0",
     "axios": "^1.14.0",
-    "dotenv": "^16.6.1"
+    "dotenv": "^16.6.1",
+    "openai": "^6.34.0",
+    "prisma": "^7.7.0"
   },
   "devDependencies": {
     "@types/node": "^22.19.17",

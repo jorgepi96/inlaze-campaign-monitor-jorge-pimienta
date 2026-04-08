@@ -8,3 +8,4 @@ dist/
 # Archivos temporales y logs
 *.log
 .DS_Store
+/src/generated/prisma

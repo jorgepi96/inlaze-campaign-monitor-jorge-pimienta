@@ -1,0 +1,25 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Modelo de la campaña para la analítica (Parte 3B)
+model Campaign {
+  id          String   @id @default(uuid())
+  name        String
+  clicks      Int
+  impressions Int
+  operator    String
+  spend_usd   Float?
+  roas        Float?   // Retorno de gasto publicitario
+  createdAt   DateTime @default(now())
+}
