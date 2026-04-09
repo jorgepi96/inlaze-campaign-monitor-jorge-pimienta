@@ -1,11 +1,125 @@
-Monitor de Campañas Inlaze: Arquitectura Híbrida (IA + Lógica Determinística)Este repositorio contiene una solución robusta para el monitoreo, análisis y reporte de campañas de marketing. El sistema transforma datos brutos en alertas accionables y resúmenes estratégicos, combinando la precisión del software tradicional con la capacidad de síntesis de la Inteligencia Artificial.Filosofía de Diseño: Eficiencia y DeterminismoPara esta solución, se ha implementado una arquitectura híbrida. A diferencia de implementaciones básicas que delegan toda la lógica en un LLM, este sistema separa las responsabilidades para garantizar escalabilidad y reducir costos operativos:Clasificación Determinística (Core):La evaluación de estados (CRITICAL, WARNING, OK) se realiza mediante lógica pura en TypeScript.Por qué: Clasificar métricas basadas en umbrales (CTR/ROAS) es una operación matemática que debe ser predecible ($O(1)$). Delegar esto a una IA generativa añadiría latencia innecesaria, riesgos de "alucinación" y sobrecostos de API.Capa de Inteligencia Ejecutiva:Se utiliza el modelo GPT-4o (vía SDK oficial de OpenAI) exclusivamente para la generación de resúmenes estratégicos y propuestas de acción. La IA recibe datos ya procesados y clasificados, lo que permite obtener análisis mucho más precisos y útiles para la toma de decisiones.Características TécnicasTipado Estricto: Implementación 100% en TypeScript con interfaces definidas para todo el flujo de datos, eliminando por completo el uso de tipos any.Capa de Persistencia Avanzada: Uso de Prisma ORM para la gestión de base de datos, incluyendo consultas optimizadas de agrupación por operador y cálculos de promedios de ROAS en periodos de 7 días.Integración Robusta de IA: Migración al SDK oficial de OpenAI para un manejo de errores superior y una integración nativa con los modelos más recientes.Automatización de Flujos: Integración con n8n mediante Webhooks para la transmisión de alertas y reportes consolidados.Estructura del Proyectosrc/utils/: Lógica matemática para la clasificación de estados de campaña.src/analysis/: Módulos de procesamiento de datos y filtrado de performance (CTR).src/database/: Implementación de Prisma para analítica agregada.src/services/: Capa de servicios para la integración con el SDK de OpenAI.n8n/: Archivo JSON con la configuración del flujo de automatización.Configuración e Instalación1. Variables de EntornoCrea un archivo .env en la raíz del proyecto basándote en el archivo .env.example:Fragmento de códigoOPENAI_API_KEY=tu_api_key_aqui
-N8N_WEBHOOK_URL=tu_endpoint_aqui
-DATABASE_URL=tu_conexion_db
-2. InstalaciónBash# Instalación de dependencias y SDKs
+# Sistema de Monitoreo de Campañas - Automatización e IA
+
+
+
+Este repositorio contiene la solución técnica desarrollada para el procesamiento, análisis y reporte de métricas de campañas de marketing para la empresa Inlaze. El objetivo principal es transformar datos brutos en decisiones automáticas garantizando **determinismo**, estabilidad y un análisis profundo con Inteligencia Artificial.
+
+
+
+## Arquitectura de la Solución (Actualizada)
+
+
+
+El sistema opera bajo una arquitectura fuertemente tipada y determinística, delegando la IA únicamente para análisis ejecutivo, de modo que aseguramos la previsibilidad de los estados críticos del sistema para producción:
+
+
+
+1. **Clasificación Determinística (TypeScript):**
+
+   La evaluación del rendimiento y clasificación de los estados de cada campaña (`critical`, `warning`, `ok`) se calcula utilizando estrictamente lógica determinística a partir de los umbrales de negocio y matemáticas comprobables. **El LLM ya no toma decisiones críticas operativas**, garantizando un entorno 100% confiable y sin fallas por alucinación o sobrecostos en la ingesta masiva de datos (ver `src/index.ts` y `src/api/pokeAdapter.ts`).
+
+
+
+2. **Capa Ejecutiva (Inteligencia Artificial):**
+
+   Para potenciar la inteligencia del reporte sin interferir con la lógica de negocio, se integra el modelo GPT-4o utilizando el **SDK oficial de OpenAI** exclusivamente para procesar un "resumen ejecutivo" pos-evento (ver `src/services/aiService.ts`). La información estructurada de la IA complementa las alertas.
+
+
+
+3. **Capa Analítica y Consultas DB (Carpeta `part3/`):**
+
+   - **Refactorización Limpia (`part3/part3a.ts`):** Filtrado de Click-Through Rate aplicando buenas prácticas de TypeScript estricto (eliminación completa de tipos `any`) y protección contra división por cero (CTR < 0.02).
+
+   - **Agrupamiento Analítico (`part3/part3b.ts`):** Extracción del promedio de ROAS en los últimos 7 días con un ORM moderno (`Prisma SDK`), utilizando agrupación y cálculo estadístico dentro de la base de datos de manera óptima.
+
+
+
+4. **Transmisión de Datos:**
+
+   La información final y cruzada (incluyendo el *aiSummary*) se transporta mediante un Webhook (HTTP POST) de N8N.
+
+
+
+## Decisiones Técnicas: Determinismo vs IA
+
+
+
+Para un entorno intermedio / avanzado de monitorización (arquitectura empresarial de un producto), se debe tener cuidado de la latencia y la escalabilidad. Si un proceso batch requiere ingestar un millón de campañas, calcular clasificaciones en base a llamadas recurrentes a OpenAI (API limit restrictions) sería excesivamente costoso, incierto (-latencias en el orden de los segundos-) y propenso a variaciones no deseadas.
+
+
+
+**Abordaje elegido:**
+
+La lógica core de *'Peligro/Estable'* debe ser una operación $O(1)$ controlada y determinística puramente en software (TypeScript). Se reservó a OpenAI (SDK oficial - `aiService`) únicamente en el paso post-cálculos para leer el consolidado global y plantear resúmenes / recomendaciones ejecutivas. Esta es la arquitectura correcta para producción empresarial.
+
+
+
+## Tecnologías Implementadas
+
+
+
+- **Entorno de Ejecución:** Node.js y TypeScript (Tipado estricto habilitado, *cero* uso de "any").
+
+- **Inteligencia Artificial:** OpenAI API (Implementado con el paquete oficial `@openai`).
+
+- **Base de Datos & Cálculos Estructurados**: Prisma SDK para ORM y agrupaciones.
+
+- **Orquestación de Workflows:** n8n.
+
+
+
+## Configuración del Entorno
+
+
+
+**1. Variables de Entorno**
+
+Configura el archivo `.env` en la raíz con:
+
+```env
+
+OPENAI_API_KEY=tu_sk_de_openai_aqui
+
+N8N_WEBHOOK_URL=tu_endpoint_de_n8n_aqui
+
+DATABASE_URL=tu_base_de_datos_postgresql
+
+```
+
+
+
+**2. Ejecución**
+
+```bash
+
+# Instalación (Nuevas dependencias como Prisma y el API SDK de OpenAI)
+
 npm install
 
-# Generación del cliente de base de datos (Prisma)
-npx prisma generate
-3. EjecuciónBash# Iniciar el monitor en modo desarrollo
+
+
+# Iniciar el monitor
+
 npm run dev
-Notas sobre Calidad de CódigoManejo de Errores: Todos los servicios (API, DB, AI) están protegidos con bloques try/catch y logs descriptivos.Seguridad: Las credenciales se gestionan estrictamente mediante variables de entorno y están protegidas por .gitignore.Documentación: Se incluye un archivo DESIGN.md adicional con la propuesta técnica para la evolución hacia un Agente de IA con capacidades de tool-calling.
+
+```
+
+
+
+## Estructura del Proyecto
+
+
+
+- `/src` : Lógica base determinística, incluyendo adaptador de llamadas (mock).
+
+- `/src/services` : Servicio `aiService.ts` especializado en el modelo LLM mediante SDK oficial.
+
+- `/part3` : Carpeta explícita con la refactorización (`part3a.ts`) y la query de Prisma (`part3b.ts`).
+
+- `/n8n` : Workflow exportado para las alertas de operaciones.
+
+
+
+## Notas de Calidad
+
+- *Tipado Cero-Any*: Todos los modelos reflejan `interfaces` de TypeScript concisas protegiendo todo el ciclo de vida de la app desde la conexión de la DB / API hasta OpenAI.
